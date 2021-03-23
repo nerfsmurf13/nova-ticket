@@ -4,7 +4,15 @@ import Login from '@/pages/Login';
 import NewTicket from '@/pages/NewTicket';
 import MyTickets from '@/pages/MyTickets';
 import AllTickets from '@/pages/AllTickets';
+import Devices from '@/pages/Devices';
+import AddDevices from '@/pages/AddDevices';
+import AllInventory from '@/pages/AllInventory';
+import AddRoom from '@/pages/AddRoom';
+import Rooms from '@/pages/Rooms';
+import AddStudents from '@/pages/AddStudents';
+import Students from '@/pages/Students';
 import Ticket from '@/pages/Ticket';
+import Device from '@/pages/Device';
 import TicketSubmit from '@/pages/TicketSubmit';
 import firebase from 'firebase';
 
@@ -47,10 +55,75 @@ let router = new Router({
       },
     },
     {
+      path: '/device/:id',
+      name: 'Device',
+      component: Device,
+      props: true,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
       path: '/ticketsubmit/:id',
       name: 'TicketSubmit',
       component: TicketSubmit,
       props: true,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/inventory',
+      name: 'inventory',
+      component: AllInventory,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/devices',
+      name: 'Devices',
+      component: Devices,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/adddevices',
+      name: 'addDevices',
+      component: AddDevices,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/students',
+      name: 'students',
+      component: Students,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/addstudents',
+      name: 'addstudents',
+      component: AddStudents,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/rooms',
+      name: 'rooms',
+      component: Rooms,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/addroom',
+      name: 'addroom',
+      component: AddRoom,
       meta: {
         requiresAuth: true,
       },

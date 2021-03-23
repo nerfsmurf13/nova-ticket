@@ -4,11 +4,23 @@
 			<router-link to="/" class="item">
 				<i class="bullhorn icon"></i> Submit a Ticket
 			</router-link>
-			<router-link to="/mytickets" class="item">
+			<!-- <router-link to="/mytickets" class="item">
 				<i class="ticket alternate icon"></i> Your Tickets
-			</router-link>
+			</router-link> -->
 			<router-link to="/alltickets" class="item">
 				<i class="database icon"></i> All Tickets
+			</router-link>
+			<router-link to="/inventory" class="item">
+				<i class="database icon"></i> Inventory
+			</router-link>
+			<router-link to="/devices" class="item">
+				<i class="database icon"></i> Devices
+			</router-link>
+			<router-link to="/students" class="item">
+				<i class="database icon"></i> Students
+			</router-link>
+			<router-link to="/rooms" class="item">
+				<i class="database icon"></i> Rooms
 			</router-link>
 			<div class="right menu">
 				<li v-if="isLoggedIn" class="item">{{ currentUser }}</li>

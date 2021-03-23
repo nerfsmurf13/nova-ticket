@@ -1,79 +1,81 @@
 <template>
 	<div>
 		<div>
-			<h1>Create New Ticket</h1>
+			<h1>Add Container</h1>
 			<p>
 				<a href="#"
-					>Need help filling this out? Click here! (Youtube Link Here!)</a
+					>Add Student, Staff, Room, or other "container" to put inventory
+					in.</a
 				>
 			</p>
 		</div>
+		<div class="four ui buttons">
+			<button class="ui attached button">Add Student</button>
+			<button class="attached ui button">Add Staff</button>
+			<button class="attached ui button">Add Room</button>
+			<button class="attached ui button">Add Virtual Container</button>
+		</div>
+
 		<form v-on:submit.prevent class="ui form segment">
+			<h2>Add Student</h2>
 			<div class="three fields">
-				<div
-					class="field ui"
-					:class="{
-						error: submittedBy == '' || submittedBy == '@NovaAcademy.org',
-					}"
-				>
-					<label>Your e-Mail</label>
-					<input type="text" v-model.trim="submittedBy" />
+				<div class="field ui">
+					<label>First Name</label>
+					<input
+						type="text"
+						v-model.trim="firstName"
+						@keyup="computeEmail(firstName, lastName)"
+					/>
 				</div>
-				<div class="field" :class="{ error: issue1 == '' }">
-					<label>Problem</label>
-					<select class="ui fluid dropdown" v-model="issue1">
-						<option value="">Select Issue</option>
-						<option value="app">Application</option>
-						<option value="desktop">Desktop Issue</option>
-						<option value="laptop">Laptop Issue</option>
-						<option value="email">Email</option>
-						<option value="internet">Internet</option>
-						<option value="printer">Printer</option>
-						<option value="other">Other Issue</option>
-					</select>
+				<div class="field ui">
+					<label>Last Name</label>
+					<input
+						type="text"
+						v-model.trim="lastName"
+						@keyup="computeEmail(firstName, lastName)"
+					/>
+				</div>
+				<div class="field ui">
+					<label>ID #</label>
+					<input type="text" v-model.trim="studentId" />
+				</div>
+				<div class="field ui">
+					<label>Grade</label>
+					<input type="text" v-model.trim="grade" />
 				</div>
 				<div class="field" :class="{ error: location == '' }">
-					<label>Location</label>
+					<label>Campus</label>
 					<select class="ui fluid dropdown" v-model="location">
-						<option value="">Location</option>
+						<option value="">Campus</option>
 						<option value="000">Remote</option>
 						<option value="001">Campus 1</option>
 						<option value="002">Campus 2</option>
 						<option value="003">Campus 3</option>
 					</select>
 				</div>
-				<div class="field" :class="{ error: room == '' }">
-					<label>Room</label>
-					<input type="text" v-model.trim="room" />
-				</div>
-				<div class="field" :class="{ error: planningPeriod == '' }">
-					<label>Planning Period</label>
-					<select class="ui fluid dropdown" v-model="planningPeriod">
-						<option value="">Select</option>
-						<option value="none">None</option>
-						<option value="1">1</option>
-						<option value="2">2</option>
-						<option value="3">3</option>
-						<option value="4">4</option>
-						<option value="5">5</option>
-						<option value="lunch">Lunch</option>
-						<option value="other">Other</option>
-					</select>
-				</div>
 			</div>
-			<div class="field" :class="{ error: ticketTitle == '' }">
-				<label>Title</label>
-				<input type="text" v-model.trim="ticketTitle" />
-			</div>
-			<div class="field" :class="{ error: ticketBody == '' }">
-				<label>Issue Description</label>
-				<textarea v-model="ticketBody"></textarea>
+			<div class="two fields">
+				<div class="field">
+					<label>Suggested Email</label>
+					<div class="large text">{{ emailSuggestion }}</div>
+				</div>
+				<div class="field">
+					<label>Suggested Password</label>
+					<div class="large text">{{ passwordSuggestion }}</div>
+				</div>
+				<!-- <div class="field ui">
+					<label>Time Submitted</label>
+					<div></div>
+				</div>
+				<div class="field ui">
+					<label>Last Update</label>
+					<div></div>
+				</div> -->
 			</div>
 
-			<button class="ui primary submit button" @click="submitTicket()">
-				Submit Ticket
+			<button class="ui primary submit button" @click="submitStudent()">
+				Add Student
 			</button>
-
 			<button class="ui clear button" @click="clearForm()">Clear</button>
 		</form>
 	</div>
@@ -98,19 +100,23 @@ import { db } from '../firebase';
 
 export default {
 	data: () => ({
-		issue1: '',
-		issue2: '',
-		planningPeriod: '',
-		ticketTitle: '',
-		ticketBody: '',
-		submittedBy: '@NovaAcademy.org',
+		uid: '',
+		firstName: '',
+		lastName: '',
+		studentId: '',
+		grade: '',
 		location: '',
-		room: '',
+		submittedBy: '@NovaAcademy.org',
+		passwordSuggestion: '',
+		emailSuggestion: '',
 	}),
 	watch: {},
 	firestore: {},
 	created: function () {
 		this.ticketId = this.generateTicketNumber();
+	},
+	updated: {
+		// computeEmail,
 	},
 	methods: {
 		generateTicketNumber: function () {
@@ -133,29 +139,37 @@ export default {
 		log(message) {
 			console.log(message);
 		},
-		submitTicket() {
+		computeEmail(x, y) {
+			let longLastName = y;
+			let longLastNameArr = longLastName.split(' ');
+			let lastNameLength = longLastNameArr.length - 1;
+			let shortLastName = longLastNameArr[lastNameLength];
+			this.uid = x.toLowerCase() + '.' + shortLastName.toLowerCase();
+			this.emailSuggestion = this.uid + '@student.novaacademy.org';
+		},
+		submitStudent() {
 			if (
-				this.submittedBy != '@NovaAcademy.org' &&
-				this.issue1 != '' &&
-				this.planningPeriod != '' &&
-				this.ticketBody != '' &&
+				// this.submittedBy != '@NovaAcademy.org' &&
+				this.firstName != '' &&
+				this.lastName != '' &&
+				this.studentId != '' &&
+				this.grade != '' &&
 				this.location != '' &&
-				this.room != ''
+				this.emailSuggestion != ''
+				//&&
+				//this.passwordSuggestion != ''
 			) {
-				db.collection(`tickets`).doc(this.ticketId).set({
+				db.collection(`students`).doc(this.uid).set({
 					assignedTo: '',
-					issue1: this.issue1,
-					issue2: this.issue2,
+					firstName: this.firstName,
+					lastName: this.lastName,
+					studentId: this.studentId,
+					grade: this.grade,
 					lastUpdate: Date.now(),
 					location: this.location,
-					planningPeriod: this.planningPeriod,
-					room: this.room,
-					status: '0',
 					submittedBy: this.submittedBy,
-					ticketBody: this.ticketBody,
-					ticketId: this.ticketId,
-					ticketLog: [],
-					ticketTitle: this.ticketTitle,
+					passwordSuggestion: this.passwordSuggestion,
+					emailSuggestion: this.emailSuggestion,
 					timestamp: Date.now(),
 				});
 				this.$router.push('/ticketsubmit/' + this.ticketId);

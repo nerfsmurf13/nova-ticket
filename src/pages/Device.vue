@@ -2,26 +2,26 @@
 	<div class="ui form segment">
 		<div class="field">
 			<div class="field">
-				<label>Ticket Title</label>
+				<label>Device Information</label>
 				<!-- <input type="text" v-model="ticketData.ticketTitle" /> -->
 				<div class="large text">{{ ticketTitle }}</div>
 			</div>
 			<div class="four fields">
 				<div class="field ui">
-					<label>ID</label>
-					<div class="large text">{{ ticketId }}</div>
+					<label>Manufacture</label>
+					<div class="large text">{{ manufacture }}</div>
 				</div>
 				<div class="field ui">
-					<label>User</label>
-					<div class="">{{ submittedBy }}</div>
+					<label>Model</label>
+					<div class="large text">{{ model }}</div>
 				</div>
 				<div class="field">
-					<label>Campus</label>
-					<div class="large text">{{ location }}</div>
+					<label>Serial</label>
+					<div class="large text">{{ serial }}</div>
 				</div>
 				<div class="field">
-					<label>Room</label>
-					<div class="large text">{{ room }}</div>
+					<label>Label</label>
+					<div class="large text">{{ labelname }}</div>
 				</div>
 			</div>
 			<div class="four fields">
@@ -49,22 +49,32 @@
 			<div class="ui form segment">
 				<h3>Controls</h3>
 				<div class="three fields">
-					<div class="field">
-						<label>Status</label>
-						<select class="ui dropdown" v-model="status">
-							<option value="0">Open</option>
-							<option value="1">Pending</option>
-							<option value="2">Resolved</option>
-						</select>
-					</div>
-					<div class="field">
-						<label>Assigned</label>
-						<select class="ui dropdown" v-model="assignedTo">
-							<option value="">Any</option>
-							<option value="williams">Williams</option>
-							<option value="freeman">Freeman</option>
-							<option value="rose">Rose</option>
-						</select>
+					<div class="field dropdown">
+						<label>Assign To</label>
+						<!-- <input v-model.trim="query" class="dropdown-input" /> -->
+						<input
+							v-if="Object.keys(selectedContainer).length === 0"
+							ref="dropdowninput"
+							v-model.trim="query"
+							class="dropdown-input"
+							type="text"
+							placeholder="Find country"
+						/>
+						<div v-else @click="resetSelection" class="dropdown-selected">
+							{{ selectedContainer.lastName }},
+							{{ selectedContainer.firstName }}
+						</div>
+						<div v-show="query" class="dropdown-list">
+							<div
+								@click="selectContainer(student)"
+								v-show="itemVisible(student)"
+								v-for="student in students"
+								:key="student.lastName"
+								class="dropdown-item"
+							>
+								{{ student.lastName }}, {{ student.firstName }}
+							</div>
+						</div>
 					</div>
 					<div class="field ui">
 						<label>Apply Changes</label>
@@ -76,7 +86,7 @@
 		<form v-on:submit.prevent>
 			<div class="ui fluid action input">
 				<input type="text" placeholder="Search..." v-model="currentNote" />
-				<button class="ui button" @click="addNote()">Add Note</button>
+				<button class="ui button" @click="addDeviceNote()">Add Note</button>
 			</div>
 		</form>
 		<table class="ui basic table celled selectable">
@@ -95,7 +105,7 @@
 					<td data-label="User">{{ log.user }}</td>
 					<td class="center aligned">
 						<!-- <button>^</button><button>v</button> -->
-						<div class="ui button negative" @click="deleteNote(ticketLog, log)">
+						<div class="ui button negative" @click="deleteNote(deviceLog, log)">
 							X
 						</div>
 						<!-- <button @click="deleteNote(log)" :key="ticket.id">Remove</button> -->
@@ -128,52 +138,73 @@ export default {
 		students: [],
 		studentQuery: '',
 		planningPeriod: '',
-		ticketLog: [],
+		deviceLog: [],
 		timestamp: [],
 		ticketData: [],
 		ticketsRef: [],
-		noteRef: [],
+		// noteRef: [],
 		currentNote: '',
-		query: [],
+		serial: '',
+		devices: [],
+		manufacture: '',
+		location: '',
+		labelname: '',
+		entries: [],
+		model: '',
+		query: '',
+		selectedContainer: {},
 	}),
 	watch: {
 		// currentPage: 'addNote',
 	},
 	firestore: {
-		ticketsRef: db.collection(`tickets`),
-		noteRef: db.collection(`notes`),
+		device: db.collection(`devices`),
+		students: db.collection(`students`).orderBy('lastName'),
+		noteRef: db.collection(`deviceNotes`),
+		// noteRef: db.collection(`notes`),
 	},
 	created: function () {
-		this.ticketId = this.$route.params.id;
-		this.getTicket();
+		this.serial = this.$route.params.id;
+		this.getDevice();
 	},
 	mounted: function () {
 		// this.ticketLog = doc.data().ticketLog;
 	},
 
 	methods: {
-		getTicket: function () {
-			db.collection(`tickets`)
-				.doc(this.ticketId)
+		resetSelection() {
+			this.selectedContainer = {};
+			this.$nextTick(() => this.$refs.dropdowninput.focus());
+			this.$emit('on-item-reset');
+		},
+		itemVisible(item) {
+			let currentName = item.lastName.toLowerCase();
+			let currentInput = this.query.toLowerCase();
+			return currentName.includes(currentInput);
+		},
+		selectContainer(theContainer) {
+			this.selectedContainer = theContainer;
+			this.query = '';
+			this.$emit('on-item-selected', theContainer);
+		},
+		getDevice: function () {
+			db.collection(`devices`)
+				.doc(this.serial)
 				.get()
 				.then((doc) => {
 					// this.ticketData = doc.data(); //Roundabout
 					this.log(doc);
-					this.assignedTo = doc.data().assignedTo;
-					this.tickets = doc.data().tickets;
-					this.ticketTitle = doc.data().ticketTitle;
-					this.ticketBody = doc.data().ticketBody;
-					this.ticketResolution = doc.data().ticketResolution;
-					this.submittedBy = 'nouser@fake.com';
-					this.location = doc.data().location;
-					this.room = doc.data().room;
-					this.ticketId = doc.data().ticketId;
+					this.manufacture = doc.data().manufacture;
+					this.model = doc.data().model;
+					this.serial = doc.data().serial;
+					this.labelname = doc.data().labelname;
+					this.fund = doc.data().fund;
 					this.timestamp = doc.data().timestamp;
 					this.lastUpdate = doc.data().lastUpdate;
-					this.status = doc.data().status;
-					this.ticketLog = doc.data().ticketLog;
-					this.currentNote = doc.data().currentNote;
-					this.planningPeriod = doc.data().planningPeriod;
+					// this.deviceLog = doc.data().deviceLog;
+					this.room = doc.data().room;
+					this.staff = doc.data().staff;
+					this.student = doc.data().lasstudenttUpdate;
 					this.getNotes();
 				})
 
@@ -192,14 +223,14 @@ export default {
 		},
 
 		getNotes: function () {
-			this.ticketLog = [];
+			this.deviceLog = [];
 
-			db.collection(`notes`)
-				.where('ticketId', '==', this.ticketId)
+			db.collection(`deviceNotes`)
+				.where('serial', '==', this.serial)
 				.get()
 				.then((querySnapshot) => {
 					querySnapshot.forEach((doc) => {
-						this.ticketLog.splice(9999, 1, doc.data());
+						this.deviceLog.splice(9999, 1, doc.data());
 						// this.ticketLog.push(doc.data());
 					});
 				})
@@ -239,7 +270,7 @@ export default {
 				//Two parts
 
 				//One updates google firebase data
-				this.ticketLog = []; //Reactively clears note list
+				this.deviceLog = []; //Reactively clears note list
 				var query = db.collection('notes').where('time', '==', element.time);
 				query.get().then(function (querySnapshot) {
 					querySnapshot.forEach(function (doc) {
@@ -252,22 +283,22 @@ export default {
 			this.log(`Element Timestamp: ${element.time}`);
 			for (let i = 0; i < noteArray.length; i++) {
 				if (noteArray[i].time != element.time) {
-					this.ticketLog.push(noteArray[i]);
+					this.deviceLog.push(noteArray[i]);
 					this.log(noteArray[i].time);
 				}
 			}
 
-			// // this.getNotes();
+			// this.getNotes();
 		},
-		addNote() {
+		addDeviceNote() {
 			let importNotesData = {
-				ticketId: this.ticketId,
+				serial: this.serial,
 				note: this.currentNote,
 				time: Date.now(),
 				user: 'ewilliams',
 			};
-			db.collection(`notes`).add(importNotesData);
-			this.ticketLog.push(importNotesData);
+			db.collection(`deviceNotes`).add(importNotesData);
+			this.deviceLog.push(importNotesData);
 			this.currentNote = '';
 			this.updateLastUpdate();
 		},
@@ -346,7 +377,7 @@ export default {
 	},
 	computed: {
 		notesByTime() {
-			return this.ticketLog.sort((a, b) => {
+			return this.deviceLog.sort((a, b) => {
 				return b.time - a.time;
 			});
 		},
@@ -362,5 +393,60 @@ export default {
 }
 .large.text {
 	font-size: 1.5rem;
+}
+
+.dropdown {
+	position: relative;
+	width: 100%;
+	max-width: 400px;
+	margin: 0 auto;
+}
+.dropdown-input,
+.dropdown-selected {
+	width: 100%;
+	padding: 10px 16px;
+	border: 1px solid transparent;
+	background: #edf2f7;
+	line-height: 1.2em;
+	outline: none;
+	border-radius: 8px;
+}
+.dropdown-input:focus,
+.dropdown-selected:hover {
+	background: #fff;
+	border-color: #e2e8f0;
+}
+.dropdown-input::placeholder {
+	opacity: 0.7;
+}
+.dropdown-selected {
+	font-weight: bold;
+	cursor: pointer;
+}
+.dropdown-list {
+	position: absolute;
+	width: 100%;
+	max-height: 500px;
+	margin-top: 4px;
+	overflow-y: auto;
+	background: #ffffff;
+	box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+		0 4px 6px -2px rgba(0, 0, 0, 0.05);
+	border-radius: 8px;
+	z-index: 999;
+}
+.dropdown-item {
+	display: flex;
+	width: 100%;
+	padding: 11px 16px;
+	cursor: pointer;
+}
+.dropdown-item:hover {
+	background: #edf2f7;
+}
+.dropdown-item-flag {
+	max-width: 24px;
+	max-height: 18px;
+	margin: auto 12px auto 0px;
 }
 </style>

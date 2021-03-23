@@ -1,46 +1,44 @@
 <template>
-	<div>
+	<div class="custom-margin-bottom">
 		<div>
 			<h1>All Tickets</h1>
 		</div>
 		<form v-on:submit.prevent class="ui huge form segment">
 			<div class="field">
-				<div class="three fields">
-					<div class="field">
+				<div class="fields">
+					<div class="eight wide field">
 						<label>Search</label>
-						<input type="text" v-model.trim="studentQuery" ref="step1" />
+						<input
+							type="text"
+							v-on:keyup="fetchTickets"
+							v-model="ticketQuery"
+						/>
 					</div>
-					<div class="field" :class="{ error: schoolCode == '' }">
-						<label>Asset Tag</label>
-						<input type="text" v-model.trim="assetTag" ref="step1" />
-					</div>
-					<div class="field" :class="{ error: schoolCode == '' }">
-						<label>School</label>
-						<select v-model="schoolCode">
-							<option value>Pick a School</option>
-							<option value="002">Garland High School</option>
-							<option value="003">South Garland High School</option>
-							<option value="004">North Garland High School</option>
-							<option value="005">Lakeview Centennial High School</option>
-							<option value="006">Memorial Pathways</option>
-							<option value="009">Rowlett High School</option>
-							<option value="008">Naaman High School</option>
-							<option value="010">Sachse High School</option>
+					<div class="field">
+						<label>Status</label>
+						<select @change="fetchTickets" v-model="statusQuery">
+							<option value="">All</option>
+							<option value="0">Open</option>
+							<option value="1">Pending</option>
+							<option value="2">Resolved</option>
 						</select>
 					</div>
-					<div>
-						<i class="x icon large"></i>
+					<div class="field">
+						<label>Location</label>
+						<select @change="fetchTickets" v-model="campusQuery">
+							<option value="">Location</option>
+							<option value="000">Remote</option>
+							<option value="001">Campus 1</option>
+							<option value="002">Campus 2</option>
+							<option value="003">Campus 3</option>
+						</select>
 					</div>
 				</div>
 			</div>
-
-			<button class="ui huge primary submit button" @click="submitDevice()">
-				Create Record
-			</button>
 		</form>
 		<div class="ui hidden divider"></div>
 		<div class="ui grid centered">
-			<h2>Tickets</h2>
+			<h2>{{ filteredTickets.length }} Tickets</h2>
 		</div>
 		<div class="ui grid centered">
 			<table class="ui basic table selectable">
@@ -64,7 +62,8 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="ticket in tickets.slice().reverse()">
+					<!-- <tr v-for="ticket in filteredTickets.slice().reverse()"> -->
+					<tr v-for="ticket in filteredTickets.slice().reverse()">
 						<!-- <td>{{ device.id }}</td> -->
 						<td data-label="Issue">
 							<a v-bind:href="'/ticket/' + ticket.ticketId">{{
@@ -72,7 +71,7 @@
 							}}</a>
 						</td>
 						<td data-label="Issue">{{ ticket.ticketTitle }}</td>
-						<td data-label="Status">{{ ticket.status }}</td>
+						<td data-label="Status">{{ statusConverter(ticket.status) }}</td>
 						<td data-label="User">{{ ticket.submittedBy }}</td>
 						<!-- <td data-label="Box">{{ device.box }}</td> -->
 						<td data-label="Time">{{ timeConvert(ticket.timestamp) }}</td>
@@ -84,64 +83,20 @@
 					</tr>
 				</tbody>
 			</table>
-			<!-- <div
-				aria-label="Pagination Navigation"
-				role="navigation"
-				class="ui pagination menu"
-			>
-				<a
-					aria-current="false"
-					aria-disabled="false"
-					tabindex="0"
-					value="1"
-					aria-label="Previous item"
-					type="prevItem"
-					class="item"
-					>⟨</a
-				><a
-					aria-current="true"
-					aria-disabled="false"
-					tabindex="0"
-					value="1"
-					type="pageItem"
-					class="active item"
-					>1</a
-				><a
-					aria-current="false"
-					aria-disabled="false"
-					tabindex="0"
-					value="2"
-					type="pageItem"
-					class="item"
-					>2</a
-				><a
-					aria-current="false"
-					aria-disabled="false"
-					tabindex="0"
-					value="3"
-					type="pageItem"
-					class="item"
-					>3</a
-				><a
-					aria-current="false"
-					aria-disabled="false"
-					tabindex="0"
-					value="2"
-					aria-label="Next item"
-					type="nextItem"
-					class="item"
-					>⟩</a
-				>
-			</div> -->
 		</div>
 	</div>
 </template>
 <script>
 import { db } from '../firebase';
+// import * as admin from 'firebase-admin';
 
 export default {
 	data: () => ({
 		tickets: [],
+		masterTickets: [],
+		// filteredTickets: [],
+
+		// filteredTicketsBySearch: [],
 		// naaman_devices: [],
 		// memorial_devices: [],
 		schoolCode: '',
@@ -150,7 +105,11 @@ export default {
 		tipDevices: [],
 		apData: [],
 		students: [],
-		studentQuery: '',
+		ticketQuery: '',
+		statusQuery: '',
+		campusQuery: '',
+		allFilteredData1: [],
+		finalFilteredData: [],
 	}),
 	// watch: {
 	// 	currentPage: 'fetchData',
@@ -160,38 +119,143 @@ export default {
 	firestore: {
 		tickets: db.collection(`tickets`).orderBy('timestamp'),
 	},
+	// created: () => {
+	// 	fetchTickets();
+	// },
 	// created: function () {
 	// 	this.fetchData();
 	// 	this.fetchTipData();
 	// 	this.fetchStudentData();
 	// 	this.fetchAPData();
 	// },
+	// created: function () {
+	// 	this.listAllUsers();
+	// },
+	mounted: function () {
+		this.fetchTickets();
+	},
 	methods: {
+		fetchTickets() {
+			// this.filteredTickets = this.tickets; //Initial 'all' ticket population for page load
+			// this.loaded = true;
+			this.masterTickets = this.tickets; //Initial 'all' ticket population that will be used for filtering
+			// let allRawFilteredData1 = [];
+			// let filteredDataBySearch = [];
+			// let filteredDataByStatus = [];
+			// let filteredDataByLocation = [];
+			// if (this.ticketQuery) {
+			// 	filteredDataBySearch = this.masterTickets.filter(
+			// 		(obj) =>
+			// 			obj.ticketTitle
+			// 				.toLowerCase()
+			// 				.indexOf(this.ticketQuery.toLowerCase()) >= 0 ||
+			// 			obj.submittedBy
+			// 				.toLowerCase()
+			// 				.indexOf(this.ticketQuery.toLowerCase()) >= 0 ||
+			// 			obj.ticketId
+			// 				.toLowerCase()
+			// 				.indexOf(this.ticketQuery.toLowerCase()) >= 0 ||
+			// 			obj.ticketBody
+			// 				.toLowerCase()
+			// 				.indexOf(this.ticketQuery.toLowerCase()) >= 0 ||
+			// 			obj.issue1.toLowerCase().indexOf(this.ticketQuery.toLowerCase()) >=
+			// 				0 ||
+			// 			obj.issue2.toLowerCase().indexOf(this.ticketQuery.toLowerCase()) >=
+			// 				0
+			// 	);
+			// 	// this.filteredTickets = filteredDataBySearch;
+			// 	// filteredDataBySearch.concat(allFilteredData1);
+
+			// 	// this.loaded = true;
+			// }
+			// if (this.statusQuery) {
+			// 	filteredDataByStatus = this.masterTickets.filter(
+			// 		(obj) => obj.status == this.statusQuery
+			// 	);
+			// 	// this.filteredTickets = filteredDataByStatus;
+			// 	// filteredDataByStatus.concat(allFilteredData1);
+			// }
+			// if (this.campusQuery) {
+			// 	filteredDataByLocation = this.masterTickets.filter(
+			// 		(obj) => obj.location == this.campusQuery
+			// 	);
+			// 	// this.filteredTickets = filteredDataByLocation;
+			// 	// filteredDataByLocation.concat(allFilteredData1);
+			// }
+			// //Console logs to see the results of each query field
+			// this.log('========');
+			// this.log('TEXT');
+			// this.log(this.ticketQuery);
+			// this.log(filteredDataBySearch);
+			// this.log('---');
+			// this.log('Status');
+			// this.log(this.statusQuery);
+			// this.log(filteredDataByStatus);
+			// this.log('---');
+			// this.log('Location');
+			// this.log(this.campusQuery);
+			// this.log(filteredDataByLocation);
+			// //Final Result (hopefully)
+			// this.log('Final');
+			// this.allFilteredData1 = allRawFilteredData1.concat(
+			// 	filteredDataByLocation,
+			// 	filteredDataByStatus,
+			// 	filteredDataBySearch
+			// );
+			// this.log(this.allFilteredData1);
+			// let buildArray = [];
+
+			// let currentCount = 0;
+			// for (let i = 0; i < this.allFilteredData1.length; i++) {
+			// 	let currentCount = 0;
+			// 	let current = this.allFilteredData1[i];
+			// 	for (let j = 0; j < this.allFilteredData1.length; j++) {
+			// 		// const element = array[index];
+			// 		if (current == this.allFilteredData1[j]) {
+			// 			currentCount++;
+			// 			if (currentCount >= 3) {
+			// 				this.finalFilteredData.push(current);
+			// 				break;
+			// 			}
+			// 		}
+			// 		// this.log(this.allFilteredData1[j]);
+			// 	}
+			// 	// const element = array[index];
+			// }
+
+			// this.log(this.finalFilteredData);
+			//for each (something) is going to pass through a few checks to see if it passes. Taking a break.
+			// array.forEach(element => {
+
+			// });
+			let youShallNotPass = (ticket) => {
+				if (this.ticketQuery.includes(ticket)) {
+					this.log('got a match');
+				}
+			};
+			//Below just adds all, need something that checks if ticket passes all filters
+			// this.log(
+			// 	filteredDataBySearch.concat(
+			// 		filteredDataByStatus.concat(filteredDataByLocation)
+			// 	)
+
+			// });
+		},
+		filterStatus() {
+			// this.loaded = false;
+			// let rocketId = e;
+			// this.filterRocket = e;
+			if (this.statusQuery) {
+				this.filterRocket = rocketId;
+			}
+			// this.rocketQueryStringer();
+		},
 		log(message) {
 			console.log(message);
 		},
 		deleteDevice: function (ticket) {
 			if (confirm(`Are you sure you want to remove ${ticket.ticketTitle}?`)) {
 				db.collection(`tickets`).doc(ticket.id).delete();
-			}
-		},
-		submitDevice() {
-			if (this.schoolCode != '') {
-				db.collection(`tickets`).add({
-					schoolCode: this.schoolCode,
-					rfId: this.assetTag,
-					studentId: this.studentQuery,
-					timestamp: Date.now(),
-				});
-				this.log('Added');
-				this.assetTag = '';
-				this.studentQuery = '';
-				// this.studentId = '';
-				// this.box = '';
-			} else {
-				this.log(`Fail! Please try again!`);
-				this.clearForm();
-				// this.newFormFire = false;
 			}
 		},
 		clearForm: function () {
@@ -250,43 +314,48 @@ export default {
 			let convdataTime = `${month} ${day}, ${year} @ ${hours}:${minutes}:${seconds}`;
 			return convdataTime;
 		},
+		statusConverter(x) {
+			switch (x) {
+				case '0':
+					return 'Open';
+				case '1':
+					return 'Pending';
+				case '2':
+					return 'Resolved';
+				default:
+					break;
+			}
+		},
 	},
 	computed: {
-		// filterSearch() {
-		// 	if (this.studentQuery.length > 0)
-		// 		return this.tipDevices.filter((student) => {
-		// 			return (
-		// 				student.gsx$assignedid.$t
-		// 					.toLowerCase()
-		// 					.indexOf(this.studentQuery.toLowerCase()) > -1 ||
-		// 				student.gsx$assignedname.$t
-		// 					.toLowerCase()
-		// 					.indexOf(this.studentQuery.toLowerCase()) > -1
-		// 			);
-		// 		});
-		// },
-		filterStudents() {
-			if (this.studentQuery.length > 0)
-				return this.students.filter((student) => {
-					return (
-						student.gsx$id.$t
-							.toLowerCase()
-							.indexOf(this.studentQuery.toLowerCase()) > -1 ||
-						student.gsx$name.$t
-							.toLowerCase()
-							.indexOf(this.studentQuery.toLowerCase()) > -1
-					);
-				});
-		},
-		filterApTest() {
-			if (this.studentQuery.length > 0)
-				return this.apData.filter((test) => {
-					return (
-						test.gsx$id.$t
-							.toLowerCase()
-							.indexOf(this.studentQuery.toLowerCase()) > -1
-					);
-				});
+		filteredTickets: function () {
+			return this.masterTickets.filter((ticket) => {
+				return (
+					ticket.ticketTitle
+						.toLowerCase()
+						.includes(this.ticketQuery.toLowerCase()) ||
+					ticket.submittedBy
+						.toLowerCase()
+						.indexOf(this.ticketQuery.toLowerCase()) >= 0 ||
+					ticket.ticketId
+						.toLowerCase()
+						.indexOf(this.ticketQuery.toLowerCase()) >= 0 ||
+					ticket.ticketBody
+						.toLowerCase()
+						.indexOf(this.ticketQuery.toLowerCase()) >= 0 ||
+					ticket.issue1.toLowerCase().indexOf(this.ticketQuery.toLowerCase()) >=
+						0 ||
+					ticket.issue2.toLowerCase().indexOf(this.ticketQuery.toLowerCase()) >=
+						0
+				);
+			});
+			// .filter((ticket2) => {
+			// 	if (this.statusQuery) {
+			// 		return ticket2.status == this.status;
+			// 	} else {
+			// 		return ticket2.ticketTitle == this.ticketQuery;
+			// 	}
+			// });
 		},
 	},
 };
