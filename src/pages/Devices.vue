@@ -43,7 +43,10 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr v-for="element in filteredResults.slice()" :key="element.serial">
+					<tr
+						v-for="element in filteredResults.slice().reverse()"
+						:key="element.serial"
+					>
 						<!-- <td>{{ device.id }}</td> -->
 
 						<td data-label="Model">

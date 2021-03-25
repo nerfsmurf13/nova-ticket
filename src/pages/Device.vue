@@ -47,7 +47,17 @@
 				{{ ticketBody }}
 			</div>
 			<div class="ui form segment">
-				<h3>Controls</h3>
+				<h3>Assignment</h3>
+				<div class="three fields">
+					<div class="field dropdown">
+						<label>Current Assignment</label>
+						<!-- <input v-model.trim="query" class="dropdown-input" /> -->
+						<div class="large text">
+							{{ room }}{{ staff }}{{ student }}{{ assignedContainer.lastName
+							}}{{ assignedContainer.studentId }}
+						</div>
+					</div>
+				</div>
 				<div class="three fields">
 					<div class="field dropdown">
 						<label>Assign To</label>
@@ -121,38 +131,38 @@ import { db } from '../firebase';
 
 export default {
 	data: () => ({
-		tickets: [],
-		ticketTitle: '',
-		ticketBody: '',
-		ticketResolution: '',
-		submittedBy: 'nouser@fake.com',
-		location: '',
-		room: '',
-		ticketId: '',
-		assignedTo: '',
-		lastUpdate: '',
-		status: 0,
-		entries: [],
-		tipDevices: [],
 		apData: [],
-		students: [],
-		studentQuery: '',
-		planningPeriod: '',
-		deviceLog: [],
-		timestamp: [],
-		ticketData: [],
-		ticketsRef: [],
-		// noteRef: [],
+		assignedContainer: {},
+		assignedTo: '',
 		currentNote: '',
-		serial: '',
+		deviceLog: [],
 		devices: [],
-		manufacture: '',
-		location: '',
-		labelname: '',
 		entries: [],
+		entries: [],
+		labelname: '',
+		lastUpdate: '',
+		location: '',
+		location: '',
+		manufacture: '',
 		model: '',
+		planningPeriod: '',
 		query: '',
+		room: '',
 		selectedContainer: {},
+		serial: '',
+		status: 0,
+		studentQuery: '',
+		students: [],
+		submittedBy: 'nouser@fake.com',
+		ticketBody: '',
+		ticketData: [],
+		ticketId: '',
+		ticketResolution: '',
+		tickets: [],
+		ticketsRef: [],
+		ticketTitle: '',
+		timestamp: [],
+		tipDevices: [],
 	}),
 	watch: {
 		// currentPage: 'addNote',
@@ -205,6 +215,7 @@ export default {
 					this.room = doc.data().room;
 					this.staff = doc.data().staff;
 					this.student = doc.data().lasstudenttUpdate;
+					this.assignedContainer = doc.data().assignedContainer;
 					this.getNotes();
 				})
 
@@ -214,12 +225,13 @@ export default {
 		},
 		updateLastUpdate() {
 			let newTime = Date.now();
-			db.collection(`tickets`).doc(this.ticketId).update({
+			db.collection(`devices`).doc(this.serial).update({
 				lastUpdate: newTime,
-				status: this.status,
-				assignedTo: this.assignedTo,
+				assignedContainer: this.selectedContainer,
+				// assignedTo: this.assignedTo,
 			});
-			this.lastUpdate = newTime;
+			(this.assignedContainer = this.selectedContainer),
+				(this.lastUpdate = newTime);
 		},
 
 		getNotes: function () {
