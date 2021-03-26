@@ -45,8 +45,8 @@
 			</button>
 		</div>
 
-		<form v-show="active" v-on:submit.prevent class="ui form segment">
-			<h2>Add {{ active }}</h2>
+		<form v-if="active" v-on:submit.prevent class="ui form segment">
+			<h2>Add {{ capitalize(active) }}</h2>
 			<div class="three fields">
 				<div class="field ui" v-show="active == 'room'">
 					<label>Room Name</label>
@@ -121,16 +121,16 @@
 				</div>
 			</div>
 			<div class="two fields">
-				<div class="field">
+				<div class="field" v-show="active !== 'room'">
 					<label>Suggested Email</label>
 					<div class="large text">{{ emailSuggestion }}</div>
 				</div>
-				<div class="field">
+				<!-- <div class="field" v-show="active !== 'room'">
 					<label>Suggested Password</label>
 					<div class="large text">{{ passwordSuggestion }}</div>
-				</div>
+				</div> -->
 				<div class="field">
-					<label>Suggested ContainerID</label>
+					<label>Container ID</label>
 					<div class="large text">{{ uid }}</div>
 				</div>
 				<!-- <div class="field ui">
@@ -144,7 +144,7 @@
 			</div>
 
 			<button class="ui primary submit button" @click="submitStudent()">
-				Add Student
+				Add {{ capitalize(active) }}
 			</button>
 			<button class="ui clear button" @click="clearForm()">Clear</button>
 		</form>
@@ -169,6 +169,7 @@
 import { db } from '../firebase';
 
 export default {
+	props: ['currentUser'],
 	data: () => ({
 		active: '',
 		uid: '',
@@ -212,14 +213,7 @@ export default {
 		},
 		computeRoomId() {
 			if (this.active) {
-				// let id = x;
-				// let type = y;
-				// let campus = z;
-				// let longLastNameArr = longLastName.split(' ');
-				// let lastNameLength = longLastNameArr.length - 1;
-				// let shortLastName = longLastNameArr[lastNameLength];
 				this.uid = this.location + this.roomType + this.roomNumber;
-				// this.emailSuggestion = this.uid + '@student.novaacademy.org';
 			}
 		},
 		computeEmail(x, y) {
@@ -235,23 +229,13 @@ export default {
 			}
 		},
 		computeName(x, y) {
-			// let longLastName = y;
-			// let longLastNameArr = longLastName.split(' ');
-			// let lastNameLength = longLastNameArr.length - 1;
-			// let shortLastName = longLastNameArr[lastNameLength];
-			// this.uid = x.toLowerCase() + '.' + shortLastName.toLowerCase();
-			// this.emailSuggestion = this.uid + '@student.novaacademy.org';
 			this.name = y + ', ' + x;
 		},
 		capitalize(x) {
-			first = x[0];
-			// let longLastName = y;
-			// let longLastNameArr = longLastName.split(' ');
-			// let lastNameLength = longLastNameArr.length - 1;
-			// let shortLastName = longLastNameArr[lastNameLength];
-			// this.uid = x.toLowerCase() + '.' + shortLastName.toLowerCase();
-			// this.emailSuggestion = this.uid + '@student.novaacademy.org';
-			this.name = y + ', ' + x;
+			let first = x[0].toUpperCase();
+			let body = x.split('');
+			body.shift();
+			return first + body.join('');
 		},
 		setActive(x) {
 			// this.log(x);
@@ -291,14 +275,15 @@ export default {
 			}
 		},
 		clearForm: function () {
-			(this.issue1 = ''),
-				(this.issue2 = ''),
-				(this.planningPeriod = ''),
-				(this.ticketTitle = ''),
-				(this.ticketBody = ''),
-				(this.submittedBy = '@NovaAcademy.org'),
+			(this.firstName = ''),
+				(this.lastName = ''),
+				(this.name = ''),
+				(this.grade = ''),
+				(this.roomType = ''),
 				(this.location = ''),
-				(this.room = '');
+				(this.roomNumber = '');
+			this.emailSuggestion = '';
+			this.containerId = '';
 		},
 		timeConvert(a) {
 			// Unixtimestamp

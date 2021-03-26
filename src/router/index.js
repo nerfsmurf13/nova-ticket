@@ -117,6 +117,7 @@ let router = new Router({
       path: '/addcontainer',
       name: 'addcontainer',
       component: AddContainer,
+      props: true,
       meta: {
         requiresAuth: true,
       },
