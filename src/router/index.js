@@ -10,6 +10,7 @@ import AllInventory from '@/pages/AllInventory';
 import AddRoom from '@/pages/AddRoom';
 import Rooms from '@/pages/Rooms';
 import AddStudents from '@/pages/AddStudents';
+import AddContainer from '@/pages/AddContainer';
 import Students from '@/pages/Students';
 import Ticket from '@/pages/Ticket';
 import Device from '@/pages/Device';
@@ -108,6 +109,14 @@ let router = new Router({
       path: '/addstudents',
       name: 'addstudents',
       component: AddStudents,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/addcontainer',
+      name: 'addcontainer',
+      component: AddContainer,
       meta: {
         requiresAuth: true,
       },
