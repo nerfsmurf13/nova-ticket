@@ -212,7 +212,7 @@ export default {
 			console.log(message);
 		},
 		computeRoomId() {
-			if (this.active) {
+			if (this.active == 'room') {
 				this.uid = this.location + this.roomType + this.roomNumber;
 			}
 		},
@@ -253,7 +253,7 @@ export default {
 				//&&
 				//this.passwordSuggestion != ''
 			) {
-				db.collection(`students`).doc(this.uid).set({
+				db.collection(`containers`).doc(this.uid).set({
 					assignedTo: '',
 					firstName: this.firstName,
 					lastName: this.lastName,
@@ -275,13 +275,13 @@ export default {
 			}
 		},
 		clearForm: function () {
-			(this.firstName = ''),
-				(this.lastName = ''),
-				(this.name = ''),
-				(this.grade = ''),
-				(this.roomType = ''),
-				(this.location = ''),
-				(this.roomNumber = '');
+			this.firstName = '';
+			this.lastName = '';
+			this.name = '';
+			this.grade = '';
+			this.roomType = '';
+			this.location = '';
+			this.roomNumber = '';
 			this.emailSuggestion = '';
 			this.containerId = '';
 		},
