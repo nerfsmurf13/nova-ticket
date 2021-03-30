@@ -47,6 +47,7 @@ export default {
 			this.isLoggedIn = true;
 			this.currentUser = firebase.auth().currentUser.email;
 		}
+		this.$root.$emit('eventing', data);
 	},
 	methods: {
 		logout: function () {

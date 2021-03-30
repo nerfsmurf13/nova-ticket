@@ -27,7 +27,7 @@ let router = new Router({
       name: 'newticket',
       component: NewTicket,
       meta: {
-        requiresAuth: true,
+        requiresAuth: false,
       },
     },
     {
@@ -70,7 +70,7 @@ let router = new Router({
       component: TicketSubmit,
       props: true,
       meta: {
-        requiresAuth: true,
+        requiresAuth: false,
       },
     },
     {

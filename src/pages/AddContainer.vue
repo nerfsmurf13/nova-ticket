@@ -143,7 +143,7 @@
 				</div> -->
 			</div>
 
-			<button class="ui primary submit button" @click="submitStudent()">
+			<button class="ui primary submit button" @click="submitContainer()">
 				Add {{ capitalize(active) }}
 			</button>
 			<button class="ui clear button" @click="clearForm()">Clear</button>
@@ -190,7 +190,47 @@ export default {
 	created: function () {
 		this.ticketId = this.generateTicketNumber();
 	},
+	mounted() {
+		this.$root.$on('eventing', (data) => {
+			console.log(data);
+		});
+	},
 	methods: {
+		submitContainer() {
+			if (
+				// this.submittedBy != '@NovaAcademy.org' &&
+				this.name != '' &&
+				this.uid != '' &&
+				// this.studentId != '' &&
+				// this.grade != '' &&
+				this.location != ''
+				// this.emailSuggestion != ''
+				//&&
+				//this.passwordSuggestion != ''
+			) {
+				db.collection(`containers`).doc(this.uid).set({
+					containerType: this.active,
+					firstName: this.firstName,
+					lastName: this.lastName,
+					name: this.name,
+					grade: this.grade,
+					lastUpdate: Date.now(),
+					location: this.location,
+					submittedBy: this.submittedBy,
+					passwordSuggestion: this.passwordSuggestion,
+					emailSuggestion: this.emailSuggestion,
+					timestamp: Date.now(),
+					roomType: this.roomType,
+					roomNumber: this.roomNumber,
+				});
+				// this.$router.push('/ticketsubmit/' + this.ticketId);
+			} else {
+				// this.log(`Complete all red fields!`);
+				alert(`Some text fields were left blank! Complete all red fields!`);
+				// this.clearForm();
+				// this.newFormFire = false;
+			}
+		},
 		generateTicketNumber: function () {
 			let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXTZ';
 			let nums = '0123456789';
@@ -241,39 +281,7 @@ export default {
 			// this.log(x);
 			this.active = x;
 		},
-		submitStudent() {
-			if (
-				// this.submittedBy != '@NovaAcademy.org' &&
-				this.firstName != '' &&
-				this.lastName != '' &&
-				this.studentId != '' &&
-				this.grade != '' &&
-				this.location != '' &&
-				this.emailSuggestion != ''
-				//&&
-				//this.passwordSuggestion != ''
-			) {
-				db.collection(`containers`).doc(this.uid).set({
-					assignedTo: '',
-					firstName: this.firstName,
-					lastName: this.lastName,
-					studentId: this.studentId,
-					grade: this.grade,
-					lastUpdate: Date.now(),
-					location: this.location,
-					submittedBy: this.submittedBy,
-					passwordSuggestion: this.passwordSuggestion,
-					emailSuggestion: this.emailSuggestion,
-					timestamp: Date.now(),
-				});
-				this.$router.push('/ticketsubmit/' + this.ticketId);
-			} else {
-				// this.log(`Complete all red fields!`);
-				alert(`Some text fields were left blank! Complete all red fields!`);
-				// this.clearForm();
-				// this.newFormFire = false;
-			}
-		},
+
 		clearForm: function () {
 			this.firstName = '';
 			this.lastName = '';
