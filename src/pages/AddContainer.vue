@@ -201,6 +201,7 @@ export default {
 				// this.submittedBy != '@NovaAcademy.org' &&
 				this.name != '' &&
 				this.uid != '' &&
+				this.containerId != '' &&
 				// this.studentId != '' &&
 				// this.grade != '' &&
 				this.location != ''
@@ -208,7 +209,8 @@ export default {
 				//&&
 				//this.passwordSuggestion != ''
 			) {
-				db.collection(`containers`).doc(this.uid).set({
+				db.collection(`containers`).doc(this.containerId).set({
+					containerId: this.containerId,
 					containerType: this.active,
 					firstName: this.firstName,
 					lastName: this.lastName,

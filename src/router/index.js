@@ -7,10 +7,12 @@ import AllTickets from '@/pages/AllTickets';
 import Devices from '@/pages/Devices';
 import AddDevices from '@/pages/AddDevices';
 import AllInventory from '@/pages/AllInventory';
+import AllContainers from '@/pages/AllContainers';
 import AddRoom from '@/pages/AddRoom';
 import Rooms from '@/pages/Rooms';
 import AddStudents from '@/pages/AddStudents';
 import AddContainer from '@/pages/AddContainer';
+import Container from '@/pages/Container';
 import Students from '@/pages/Students';
 import Ticket from '@/pages/Ticket';
 import Device from '@/pages/Device';
@@ -117,6 +119,24 @@ let router = new Router({
       path: '/addcontainer',
       name: 'addcontainer',
       component: AddContainer,
+      props: true,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/containers',
+      name: 'containers',
+      component: AllContainers,
+      props: true,
+      meta: {
+        requiresAuth: true,
+      },
+    },
+    {
+      path: '/container/:id',
+      name: 'container',
+      component: Container,
       props: true,
       meta: {
         requiresAuth: true,
