@@ -52,6 +52,10 @@
 			</div> -->
 			<div class="ui form segment">
 				<h3>Items</h3>
+				<!-- <h3>Contents</h3>
+				<p>{{ contents }}</p>
+				<h3>All Devices</h3>
+				<p>{{ devices }}</p> -->
 				<table class="ui basic table celled selectable">
 					<thead>
 						<tr>
@@ -62,10 +66,14 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr v-for="log in contentsPreview">
-							<td data-label="Time">{{ log }}</td>
-							<td data-label="Note">log.note }}</td>
-							<td data-label="User">log.user }}</td>
+						<tr v-for="item in contents" :key="item.serial">
+							<td>
+								<a v-bind:href="'/device/' + item.serial">{{
+									item.labelname
+								}}</a>
+							</td>
+							<td data-label="Note">{{ item.manufacture }}</td>
+							<td data-label="User">{{ item.model }}</td>
 							<td class="center aligned">
 								<!-- <button>^</button><button>v</button> -->
 								<div
@@ -188,7 +196,9 @@ export default {
 		containerId: '',
 		containers: [],
 		contentsPreview: [],
+		contents: [],
 		currentNote: '',
+		devices: [],
 		emailSuggestion: '',
 		entries: [],
 		firstName: '',
@@ -224,6 +234,7 @@ export default {
 	},
 	firestore: {
 		containers: db.collection(`containers`).orderBy('name'),
+		devices: db.collection(`devices`),
 		// ticketsRef: db.collection(`tickets`),
 		// noteRef: db.collection(`notes`),
 	},
@@ -233,6 +244,7 @@ export default {
 	},
 	mounted: function () {
 		// this.ticketLog = doc.data().ticketLog;
+		// this.getContents(this.$route.params.id);
 	},
 
 	methods: {
@@ -242,7 +254,7 @@ export default {
 				.get()
 				.then((doc) => {
 					// this.ticketData = doc.data(); //Roundabout
-					this.log(doc);
+					// this.log(doc);
 
 					(this.containerId = doc.data().containerId),
 						(this.firstName = doc.data().firstName),
@@ -259,11 +271,33 @@ export default {
 						(this.roomType = doc.data().roomType),
 						(this.roomNumber = doc.data().roomNumber);
 					// this.getNotes();
+					this.getContents(this.$route.params.id);
 				})
 
 				.catch((error) => {
 					console.log('Error getting documents: ', error);
 				});
+		},
+		getContents(x) {
+			//take container ID and bring up contents\
+			this.log('get contents running ' + x);
+			this.log(this.devices);
+			this.log(this.devices.length);
+			let count = 0;
+			for (let i = 0; i < this.devices.length; i++) {
+				// let things = this.devices[i];
+				// this.log(i);
+				// this.log(this.devices.length);
+				this.log(x + '  =  ' + this.devices[i].assignedContainer.containerId);
+				if (this.devices[i].assignedContainer.containerId == x) {
+					this.log(this.devices[i]);
+					this.contents.push(this.devices[i]);
+					count++;
+				}
+
+				// if (this.devices[i])
+			}
+			// return count;
 		},
 		updateLastUpdate() {
 			let newTime = Date.now();

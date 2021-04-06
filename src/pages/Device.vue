@@ -53,7 +53,10 @@
 						<label>Current Assignment</label>
 						<!-- <input v-model.trim="query" class="dropdown-input" /> -->
 						<div class="large text">
-							{{ room }}{{ staff }}{{ student }}{{ assignedContainer.name }}
+							<a v-bind:href="'/container/' + assignedContainer.containerId"
+								>{{ room }}{{ staff }}{{ student
+								}}{{ assignedContainer.name }}</a
+							>
 						</div>
 					</div>
 				</div>
