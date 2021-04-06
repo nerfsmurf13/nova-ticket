@@ -53,6 +53,7 @@
 					<tr>
 						<th>Name</th>
 						<th>ID</th>
+						<th>Content Count</th>
 						<th>Grade</th>
 						<th>Location</th>
 						<!-- <th>Active</th> -->
@@ -74,10 +75,13 @@
 					>
 						<!-- <td>{{ device.id }}</td> -->
 						<td data-label="Name">
-							{{ element.lastName }}, {{ element.firstName }}
+							<a v-bind:href="'/container/' + element.containerId">{{
+								element.name
+							}}</a>
 						</td>
 						<td data-label="ID">{{ element.containerId }}</td>
-						<td data-label="Grade">{{ element.grade }}</td>
+						<td data-label="ID">{{ countContents(element.containerId) }}</td>
+						<td data-label="Grade">grade</td>
 						<!-- <td data-label="Box">{{ device.box }}</td> -->
 						<td data-label="Location">{{ element.location }}</td>
 						<td>
@@ -108,11 +112,30 @@ export default {
 	}),
 	firestore: {
 		containers: db.collection(`containers`).orderBy('name'),
+		devices: db.collection(`devices`),
 	},
 	created: function () {},
 	methods: {
 		log(message) {
 			console.log(message);
+		},
+		countContents(x) {
+			//take container ID and bring up contents\
+			// this.log('count contents ' + x);
+			let count = 0;
+			for (let i = 0; i < this.devices.length; i++) {
+				// let things = this.devices[i];
+				// this.log(i);
+				// this.log(this.devices.length);
+				this.log(x + '  =  ' + this.devices[i].assignedContainer.containerId);
+				if (this.devices[i].assignedContainer.containerId == x) {
+					// this.log('asd');
+					count++;
+				}
+
+				// if (this.devices[i])
+			}
+			return count;
 		},
 		deleteDevice: function (device) {
 			if (confirm(`Are you sure you want to remove ${device.rfId}?`)) {

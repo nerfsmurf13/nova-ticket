@@ -224,6 +224,7 @@ export default {
 					timestamp: Date.now(),
 					roomType: this.roomType,
 					roomNumber: this.roomNumber,
+					contentsPreview: [],
 				});
 				// this.$router.push('/ticketsubmit/' + this.ticketId);
 			} else {
@@ -256,6 +257,7 @@ export default {
 		computeRoomId() {
 			if (this.active == 'room') {
 				this.uid = this.location + this.roomType + this.roomNumber;
+				this.containerId = this.uid;
 			}
 		},
 		computeEmail(x, y) {

@@ -66,8 +66,8 @@
 						</td>
 
 						<!-- <td data-label="Box">{{ device.box }}</td> -->
-						<td data-label="Location">{{ element.location }}</td>
-
+						<!-- <td data-label="Location">{{ element.location }}</td> -->
+						<td data-label="Location">{{ element.assignedContainer.name }}</td>
 						<td>
 							<button @click="deleteDevice(element)" :key="element.serial">
 								Remove

@@ -53,8 +53,7 @@
 						<label>Current Assignment</label>
 						<!-- <input v-model.trim="query" class="dropdown-input" /> -->
 						<div class="large text">
-							{{ room }}{{ staff }}{{ student }}{{ assignedContainer.lastName
-							}}{{ assignedContainer.studentId }}
+							{{ room }}{{ staff }}{{ student }}{{ assignedContainer.name }}
 						</div>
 					</div>
 				</div>
@@ -76,19 +75,26 @@
 						</div>
 						<div v-show="query" class="dropdown-list">
 							<div
-								@click="selectContainer(student)"
-								v-show="itemVisible(student)"
-								v-for="student in students"
-								:key="student.lastName"
+								@click="selectContainer(container)"
+								v-show="itemVisible(container)"
+								v-for="container in containers"
+								:key="container.name"
 								class="dropdown-item"
 							>
-								{{ student.lastName }}, {{ student.firstName }}
+								{{ container.name }}
 							</div>
 						</div>
 					</div>
 					<div class="field ui">
 						<label>Apply Changes</label>
-						<button @click="updateLastUpdate()">Apply</button>
+						<button
+							@click="
+								updateLastUpdate();
+								addDeviceNote();
+							"
+						>
+							Apply
+						</button>
 					</div>
 				</div>
 			</div>
@@ -96,7 +102,9 @@
 		<form v-on:submit.prevent>
 			<div class="ui fluid action input">
 				<input type="text" placeholder="Search..." v-model="currentNote" />
-				<button class="ui button" @click="addDeviceNote()">Add Note</button>
+				<button class="ui button" @click="addCustomDeviceNote()">
+					Add Note
+				</button>
 			</div>
 		</form>
 		<table class="ui basic table celled selectable">
@@ -138,7 +146,6 @@ export default {
 		deviceLog: [],
 		devices: [],
 		entries: [],
-		entries: [],
 		labelname: '',
 		lastUpdate: '',
 		location: '',
@@ -150,9 +157,10 @@ export default {
 		room: '',
 		selectedContainer: {},
 		serial: '',
+		staff: '',
 		status: 0,
 		studentQuery: '',
-		students: [],
+		student: '',
 		submittedBy: 'nouser@fake.com',
 		ticketBody: '',
 		ticketData: [],
@@ -169,8 +177,8 @@ export default {
 	},
 	firestore: {
 		device: db.collection(`devices`),
-		students: db.collection(`students`).orderBy('lastName'),
-		noteRef: db.collection(`deviceNotes`),
+		containers: db.collection(`containers`).orderBy('name'),
+		deviceNotes: db.collection(`deviceNotes`),
 		// noteRef: db.collection(`notes`),
 	},
 	created: function () {
@@ -188,7 +196,7 @@ export default {
 			this.$emit('on-item-reset');
 		},
 		itemVisible(item) {
-			let currentName = item.lastName.toLowerCase();
+			let currentName = item.name.toLowerCase();
 			let currentInput = this.query.toLowerCase();
 			return currentName.includes(currentInput);
 		},
@@ -214,7 +222,7 @@ export default {
 					// this.deviceLog = doc.data().deviceLog;
 					this.room = doc.data().room;
 					this.staff = doc.data().staff;
-					this.student = doc.data().lasstudenttUpdate;
+					this.student = doc.data().student;
 					this.assignedContainer = doc.data().assignedContainer;
 					this.getNotes();
 				})
@@ -230,8 +238,12 @@ export default {
 				assignedContainer: this.selectedContainer,
 				// assignedTo: this.assignedTo,
 			});
-			(this.assignedContainer = this.selectedContainer),
-				(this.lastUpdate = newTime);
+			//Update assignedContainer, room staff or student also needs to be updated...
+			this.assignedContainer = this.selectedContainer;
+			this.room = this.selectedContainer.room;
+			this.student = this.selectedContainer.student;
+			this.staff = this.selectedContainer.staff;
+			this.lastUpdate = newTime;
 		},
 
 		getNotes: function () {
@@ -299,28 +311,42 @@ export default {
 					this.log(noteArray[i].time);
 				}
 			}
-
 			// this.getNotes();
 		},
-		addDeviceNote() {
+		addCustomDeviceNote() {
 			let importNotesData = {
 				serial: this.serial,
 				note: this.currentNote,
 				time: Date.now(),
-				user: 'ewilliams',
+				user: 'TESTUSER',
 			};
 			db.collection(`deviceNotes`).add(importNotesData);
 			this.deviceLog.push(importNotesData);
 			this.currentNote = '';
 			this.updateLastUpdate();
 		},
-		clearForm: function () {
-			(this.studentQuery = ''), (this.assetTag = '');
+		//This Note will keep log of transfers
+		addDeviceNote() {
+			let importNotesData = {
+				serial: this.serial,
+				// note: this.currentNote,
+				note: 'Device transferred to ' + this.assignedContainer.name,
+				time: Date.now(),
+				user: 'TESTUSER',
+			};
+
+			db.collection(`deviceNotes`).add(importNotesData);
+			this.deviceLog.push(importNotesData);
+			this.currentNote = '';
+			this.updateLastUpdate();
 		},
-		makeActive: function (student) {
-			this.studentQuery = student.gsx$id.$t;
-			// this.log(student.gsx$id.$t);
-		},
+		// clearForm: function () {
+		// 	(this.studentQuery = ''), (this.assetTag = '');
+		// },
+		// makeActive: function (student) {
+		// 	this.studentQuery = student.gsx$id.$t;
+		// 	// this.log(student.gsx$id.$t);
+		// },
 		timeConvert(a, time) {
 			//if time == true, give time and date, else just date
 			// Unixtimestamp

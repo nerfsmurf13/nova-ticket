@@ -8,6 +8,10 @@
 			</div>
 			<div class="four fields">
 				<div class="field ui">
+					<label>Name</label>
+					<div class="large text">{{ name }}</div>
+				</div>
+				<div class="field ui">
 					<label>ID</label>
 					<div class="large text">{{ containerId }}</div>
 				</div>
@@ -76,7 +80,7 @@
 					</tbody>
 				</table>
 				<div class="three fields">
-					<div class="field">
+					<!-- <div class="field">
 						<label>Status</label>
 						<select class="ui dropdown" v-model="status">
 							<option value="0">Open</option>
@@ -96,16 +100,17 @@
 					<div class="field ui">
 						<label>Apply Changes</label>
 						<button @click="updateLastUpdate()">Apply</button>
-					</div>
+					</div> -->
 				</div>
 			</div>
 		</div>
-		<form v-on:submit.prevent>
+
+		<!-- <form v-on:submit.prevent>
 			<div class="ui fluid action input">
 				<input type="text" placeholder="Search..." v-model="currentNote" />
 				<button class="ui button" @click="addNote()">Add Note</button>
 			</div>
-		</form>
+		</form> -->
 		<table class="ui basic table celled selectable">
 			<thead>
 				<tr>
@@ -142,6 +147,32 @@
 				</tr> -->
 			</tbody>
 		</table>
+		<div class="ui top attached tabular menu">
+			<div @click="demoTab = 0" class="item" :class="{ active: demoTab == 0 }">
+				Contents
+			</div>
+			<div @click="demoTab = 1" class="item" :class="{ active: demoTab == 1 }">
+				History
+			</div>
+		</div>
+		<div v-show="demoTab == 0" class="ui bottom attached active tab segment">
+			<p>Tab one content</p>
+			<p>
+				Lorem ipsum, dolor sit amet consectetur adipisicing elit. Id eveniet
+				laborum dolorum! Nobis deserunt sapiente porro nam, dolorum quia eius
+				dolor nemo reiciendis architecto, praesentium consequuntur quam
+				excepturi numquam ut!
+			</p>
+		</div>
+		<div v-show="demoTab == 1" class="ui bottom attached active tab segment">
+			<p>Tab Two content</p>
+			<p>
+				Lorem ipsum, dolor sit amet consectetur adipisicing elit. Id eveniet
+				laborum dolorum! Nobis deserunt sapiente porro nam, dolorum quia eius
+				dolor nemo reiciendis architecto, praesentium consequuntur quam
+				excepturi numquam ut!
+			</p>
+		</div>
 	</div>
 </template>
 <script>
@@ -150,6 +181,7 @@ import { db } from '../firebase';
 
 export default {
 	data: () => ({
+		demoTab: 0,
 		active: '',
 		apData: [],
 		assignedTo: '',

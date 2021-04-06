@@ -56,6 +56,7 @@ import { db } from '../firebase';
 
 export default {
 	data: () => ({
+		assignedContainer: '',
 		labelName: '',
 		serial: '',
 		manufacture: '',
@@ -83,6 +84,7 @@ export default {
 			) {
 				db.collection(`devices`).doc(this.serial).set({
 					assignedTo: '',
+					assignedContainer: '',
 					labelname: this.labelName,
 					serial: this.serial,
 					manufacture: this.manufacture,
